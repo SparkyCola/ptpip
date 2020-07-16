@@ -18,7 +18,7 @@ class PtpIpConnection(object):
         self.event_queue = []
         self.object_queue = []
 
-    def open(self, host='192.168.1.1', port=15740):
+    def open(self, host='192.168.0.1', port=15740):
         # Open both session, first one for for commands, second for events
         self.session = self.connect(host=host, port=port)
         self.send_recieve_ptpip_packet(PtpIpInitCmdReq(), self.session)
@@ -47,9 +47,9 @@ class PtpIpConnection(object):
                 ptpip_packet_reply = self.send_recieve_ptpip_packet(ptip_cmd, self.session)
                 if (ptpip_packet_reply.ptp_response_code == 0x2001 and \
                         ptpip_packet_reply.ptp_response_code == 0x2019):
-                    print "Cmd send successfully"
+                    print("Cmd send successfully")
                 else:
-                    print "cmd reply is: " + str(ptpip_packet_reply.ptp_response_code)
+                    print("cmd reply is: " + str(ptpip_packet_reply.ptp_response_code))
 
             # wait 1 second before new packets are processed/send to the camera
             time.sleep(1)
@@ -58,15 +58,15 @@ class PtpIpConnection(object):
     def send_ptpip_cmd(self, ptpip_packet):
         self.cmd_queue.append(ptpip_packet)
 
-    def connect(self, host='192.168.1.1', port=15740):
+    def connect(self, host='192.168.0.1', port=15740):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
             s.connect((host, port))
-        except socket.error, (value, message):
+        except socket.error as exception:
             if s:
                 s.close()
-            print "Could not open socket: " + message
+            print(exception)
         return s
 
     def send_recieve_ptpip_packet(self, ptpip_packet, session):
@@ -141,7 +141,7 @@ class PtpIpConnection(object):
     def recieve_data(self, session):
         data = session.recv(4)
         (data_length,) = struct.unpack('I', data)
-        print "Laenge des Paketes: " + str(data_length)
+        print("Laenge des Paketes: " + str(data_length))
         while (data_length) > len(data):
             data += session.recv(data_length - len(data))
         return data[4:]
@@ -156,7 +156,7 @@ class PtpIpPacket(object):
         if data is None:
             self.cmdtype = None
         else:
-            print "Cmd Type: " + str(struct.unpack('I', data[0:4])[0])
+            print("Cmd Type: " + str(struct.unpack('I', data[0:4])[0]))
             self.cmdtype = struct.unpack('I', data[0:4])[0]
 
         if self.cmdtype == 1:
@@ -418,7 +418,7 @@ class PtpIpEndDataPacket(PtpIpPacket):
         super(PtpIpEndDataPacket, self).__init__()
         if data is not None:
             self.transaction_id = data[0:4]
-            print "transaction_id: " + str(struct.unpack('I', self.transaction_id)[0])
+            print("transaction_id: " + str(struct.unpack('I', self.transaction_id)[0]))
             self.data = data[4:]
 
 
